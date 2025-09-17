@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:mime/mime.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '/shared/widgets/pixel_transparent_painter.dart';
+import 'pixel_transparent_painter.dart';
 
 /// A page that displays a preview of the generated image.
 ///

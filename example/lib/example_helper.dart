@@ -5,11 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:vibration/vibration.dart';
-
-import '../../features/preview/preview_img.dart';
-import '../constants/example_constants.dart';
-export '/shared/widgets/prepare_image_widget.dart';
+import 'preview_img.dart';
 
 /// A mixin that provides helper methods and state management for image editing
 /// using the [ProImageEditor]. It is intended to be used in a [StatefulWidget].
@@ -29,30 +25,21 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   /// Indicates whether image-resources are pre-cached.
   bool isPreCached = true;
 
-  bool _deviceCanVibrate = false;
-  bool _deviceCanCustomVibrate = false;
+  // bool _deviceCanVibrate = false;
+  // bool _deviceCanCustomVibrate = false;
 
   @override
   void initState() {
     super.initState();
 
-    Vibration.hasVibrator().then((hasVibrator) async {
-      _deviceCanVibrate = hasVibrator;
-
-      if (!hasVibrator || !mounted) return;
-
-      _deviceCanCustomVibrate = await Vibration.hasCustomVibrationsSupport();
-    });
+    // Vibration.hasVibrator().then((hasVibrator) async {
+    //   _deviceCanVibrate = hasVibrator;
+    //
+    //   if (!hasVibrator || !mounted) return;
+    //
+    //   _deviceCanCustomVibrate = await Vibration.hasCustomVibrationsSupport();
+    // });
   }
-
-  /// Determines if the current layout should use desktop mode based on the
-  /// screen width.
-  ///
-  /// Returns `true` if the screen width is greater than or equal to
-  /// [kImageEditorExampleIsDesktopBreakPoint], otherwise `false`.
-  bool isDesktopMode(BuildContext context) =>
-      MediaQuery.sizeOf(context).width >=
-      kImageEditorExampleIsDesktopBreakPoint;
 
   /// Called when the image editing process starts.
   /// Records the time when editing began.
@@ -177,16 +164,16 @@ mixin ExampleHelperState<T extends StatefulWidget> on State<T> {
   /// This function is used to provide haptic feedback when helper lines are
   /// interacted with, enhancing the user experience.
   void vibrateLineHit() {
-    if (_deviceCanVibrate && _deviceCanCustomVibrate) {
-      Vibration.vibrate(duration: 3);
-    } else if (!kIsWeb && Platform.isAndroid) {
-      /// On old android devices we can stop the vibration after 3 milliseconds
-      /// iOS: only works for custom haptic vibrations using CHHapticEngine.
-      /// This will set `deviceCanCustomVibrate` anyway to true so it's
-      /// impossible to fake it.
-      Vibration.vibrate();
-      Future.delayed(const Duration(milliseconds: 3))
-          .whenComplete(Vibration.cancel);
-    }
+    // if (_deviceCanVibrate && _deviceCanCustomVibrate) {
+    //   Vibration.vibrate(duration: 3);
+    // } else if (!kIsWeb && Platform.isAndroid) {
+    //   /// On old android devices we can stop the vibration after 3 milliseconds
+    //   /// iOS: only works for custom haptic vibrations using CHHapticEngine.
+    //   /// This will set `deviceCanCustomVibrate` anyway to true so it's
+    //   /// impossible to fake it.
+    //   Vibration.vibrate();
+    //   Future.delayed(const Duration(milliseconds: 3))
+    //       .whenComplete(Vibration.cancel);
+    // }
   }
 }

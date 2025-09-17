@@ -11,9 +11,10 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-import '/core/mixin/example_helper.dart';
-import '/shared/widgets/material_icon_button.dart';
-import '/shared/widgets/pixel_transparent_painter.dart';
+import 'example_helper.dart';
+import 'material_icon_button.dart';
+import 'pixel_transparent_painter.dart';
+import 'prepare_image_widget.dart';
 
 /// The example for a frame around the images
 class FrameExample extends StatefulWidget {
@@ -288,7 +289,6 @@ class _FrameExampleState extends State<FrameExample>
         onImageEditingComplete: onImageEditingComplete,
         onCloseEditor: (editorMode) => onCloseEditor(
           editorMode: editorMode,
-          enablePop: !isDesktopMode(context),
         ),
         mainEditorCallbacks: MainEditorCallbacks(
           helperLines: HelperLinesCallbacks(onLineHit: vibrateLineHit),
@@ -306,7 +306,7 @@ class _FrameExampleState extends State<FrameExample>
             selectable: LayerInteractionSelectable.disabled,
           ),
           mainEditor: MainEditorConfigs(
-            enableCloseButton: !isDesktopMode(context),
+            enableCloseButton: true,
             widgets: MainEditorWidgets(
               bodyItemsRecorded: (editor, rebuildStream) => [
                 _buildFrame(editor.sizesManager.bodySize, rebuildStream),
