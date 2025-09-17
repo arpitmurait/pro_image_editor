@@ -1,6 +1,9 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:example/frame_example.dart';
 import 'package:example/selectable_layer_example.dart';
 import 'package:flutter/material.dart';
+
+import 'frame_response.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +30,47 @@ class MyApp extends StatelessWidget {
       builder: BotToastInit(),
       navigatorObservers: [BotToastNavigatorObserver()],
       debugShowCheckedModeBanner: false,
-      home: const SelectableLayerExample(),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  FrameDataResponse? response;
+  final ApiService _apiService = ApiService();
+  final DataTransformer _dataTransformer = DataTransformer();
+
+  @override
+  void initState() {
+    super.initState(); 
+    _loadAndTransformData();
+  }
+  
+   _loadAndTransformData() async {
+    response = await _apiService.fetchFrameData(); 
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Poster"),
+      ),
+      body: Column(
+        children: [
+          ElevatedButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(history: _dataTransformer.transformApiDataToEditorMap(response!),),));
+          }, child: Text("Open"))
+        ],
+      ),
     );
   }
 }

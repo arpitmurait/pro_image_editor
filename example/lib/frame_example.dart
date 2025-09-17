@@ -16,10 +16,13 @@ import 'material_icon_button.dart';
 import 'pixel_transparent_painter.dart';
 import 'prepare_image_widget.dart';
 
+String kImageEditorExampleAssetPath = "assets/post.jpg";
+
 /// The example for a frame around the images
 class FrameExample extends StatefulWidget {
-  /// Creates a new [FrameExample] widget.
-  const FrameExample({super.key});
+  final Map<String,dynamic> history;
+  /// Creates a new [SelectableLayerExample] widget.
+  const FrameExample({super.key, required this.history});
 
   @override
   State<FrameExample> createState() => _FrameExampleState();
@@ -45,6 +48,25 @@ class _FrameExampleState extends State<FrameExample>
     _bottomBarScrollCtrl = ScrollController();
     preCacheImage(assetPath: _frameUrl);
     _createTransparentBackgroundImage();
+
+  }
+
+  loadBgImage(){
+    precacheImage(AssetImage(kImageEditorExampleAssetPath), context);
+    editorKey.currentState!.addLayer(
+      WidgetLayer(
+        /// Adjust the offset position to place the image at any desired
+        /// location. Note that a zero offset places the image at the center
+        /// of the editor.
+        offset: Offset.zero,
+        scale: _initScale * (MediaQuery.of(context).devicePixelRatio / 1.65),
+        widget: Image.asset(
+          kImageEditorExampleAssetPath,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+    setState(() {});
   }
 
   @override
@@ -239,6 +261,12 @@ class _FrameExampleState extends State<FrameExample>
 
     _transparentBytes = bytes;
     if (mounted) setState(() {});
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(seconds: 1),() {
+        loadBgImage();
+      },);
+    });
   }
 
   Future<Size> get _frameSize async {
@@ -304,6 +332,9 @@ class _FrameExampleState extends State<FrameExample>
           ),
           layerInteraction: const LayerInteractionConfigs(
             selectable: LayerInteractionSelectable.disabled,
+          ),
+          stateHistory: StateHistoryConfigs(
+            initStateHistory: ImportStateHistory.fromMap(widget.history),
           ),
           mainEditor: MainEditorConfigs(
             enableCloseButton: true,
@@ -474,6 +505,15 @@ class _FrameExampleState extends State<FrameExample>
                         color: Colors.white,
                       ),
                       onPressed: editor.openEmojiEditor,
+                    ),
+                    FlatIconTextButton(
+                      label: Text('Sticker', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.sticky_note_2,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openStickerEditor,
                     ),
                   ],
                 ),
