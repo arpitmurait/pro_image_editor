@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class ApiService {
   Future<(String,List<AttributeModel>)> fetchFrameData() async {
-    const String apiUrl = 'http://192.168.1.24:1000/api/frame-data-list/25/1/6';
+    const String apiUrl = 'http://192.168.1.24:1000/api/frame-data-list/62/1/6';
     const String bearerToken = '27|UIcpM1TLITp97kYuGyX3G8EbY4sRN0Iu85uxXtvTb026de7b';
 
     final response = await dio.Dio().get(apiUrl,

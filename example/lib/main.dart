@@ -68,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          ElevatedButton(onPressed: () {
+          ElevatedButton(onPressed: () async {
+            await _loadAndTransformData();
             Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(frameUrl: frame,attributes: response!,)));
           }, child: Text("Open"))
         ],

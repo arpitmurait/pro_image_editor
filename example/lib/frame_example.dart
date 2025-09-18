@@ -19,6 +19,8 @@ import 'pixel_transparent_painter.dart';
 import 'prepare_image_widget.dart';
 
 String kImageEditorExampleAssetPath = "assets/post.jpg";
+String icCall = "assets/icons/1_call.png";
+String icUser = "assets/icons/1_user.png";
 
 /// The example for a frame around the images
 class FrameExample extends StatefulWidget {
@@ -114,15 +116,14 @@ class _FrameExampleState extends State<FrameExample>
         double scaledX = scaleValue(context, attr.offsetX);
         double scaledY = scaleValue(context, attr.offsetY);
 
-        print("attr.fontColor ${attr.fontColor}");
         editorKey.currentState!.addLayer(
           TextLayer(
             /// Adjust the offset position to place the image at any desired
             /// location. Note that a zero offset places the image at the center
             /// of the editor.
-            offset: Offset(scaledX + (scaleNormalValue(context, attr.width) / 2.5), scaledY - (scaleNormalValue(context, attr.height))),
+            offset: Offset(scaledX + MediaQuery.of(context).size.width * 0.06, scaledY),
             text: attr.text ?? '',
-            scale: ((attr.textSize ?? 14) / 4) * 0.1,
+            scale: ((attr.textSize ?? 14) / 6) * 0.1,
             colorMode: LayerBackgroundMode.onlyColor,
             background: Colors.transparent,
             textStyle: TextStyle(
@@ -130,19 +131,19 @@ class _FrameExampleState extends State<FrameExample>
               fontWeight: attr.fontStyle,
               color: attr.fontColor,
             ),
+            align: TextAlign.right,
             color: attr.fontColor ?? Colors.black,
           ),
         );
       } else if(attr.imagePath.isNotEmpty) {
         double scaledX = scaleValue(context, attr.offsetX);
         double scaledY = scaleValue(context, attr.offsetY);
-
         editorKey.currentState!.addLayer(
             WidgetLayer(
               /// Adjust the offset position to place the image at any desired
               /// location. Note that a zero offset places the image at the center
               /// of the editor.
-              offset: Offset(scaledX + (scaleNormalValue(context, attr.width) / 2.5), scaledY + (scaleNormalValue(context, attr.height) / 2.5)),
+              offset: Offset(scaledX, scaledY),
               boxConstraints: BoxConstraints(
                 maxHeight: scaleNormalValue(context, attr.height),
                 maxWidth: scaleNormalValue(context, attr.width),
@@ -165,17 +166,16 @@ class _FrameExampleState extends State<FrameExample>
               /// Adjust the offset position to place the image at any desired
               /// location. Note that a zero offset places the image at the center
               /// of the editor.
-              offset: Offset(scaledX - (scaleNormalValue(context, attr.width) / 2.5), scaledY - (scaleNormalValue(context, attr.height) / 2.5)),
+              offset: Offset(scaledX, scaledY),
               boxConstraints: BoxConstraints(
                 maxHeight: scaleNormalValue(context, attr.height),
                 maxWidth: scaleNormalValue(context, attr.width),
                 minWidth: scaleNormalValue(context, attr.width),
                 minHeight: scaleNormalValue(context, attr.height),
               ),
-              widget: Image.network(
-                attr.imagePath ?? '',
+              widget: Image.asset(icCall,
                 height: scaleNormalValue(context, attr.height),
-                width: scaleNormalValue(context, attr.height),
+                width: scaleNormalValue(context, attr.width),
                 errorBuilder: (context, error, stackTrace) => Icon(Icons.error,color: attr.imageColor,),
               ),
             )
@@ -214,14 +214,14 @@ class _FrameExampleState extends State<FrameExample>
   }
 
   double scaleValue(BuildContext context, double designValue) {
-    const double designWidth = 1024.0;
+    const double designWidth = 1080.0;
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double scaleFactor = deviceWidth / designWidth;
     return (designValue * scaleFactor) - (deviceWidth / 2);
   }
 
   double scaleNormalValue(BuildContext context, double designValue) {
-    const double designWidth = 1024.0;
+    const double designWidth = 1080.0;
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double scaleFactor = deviceWidth / designWidth;
     return (designValue * scaleFactor);

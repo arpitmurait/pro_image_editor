@@ -38,6 +38,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/icons/
     - assets/demo.png
     - assets/demo.mp4
     - assets/frame.png
