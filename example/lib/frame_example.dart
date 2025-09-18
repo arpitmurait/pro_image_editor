@@ -114,6 +114,7 @@ class _FrameExampleState extends State<FrameExample>
         double scaledX = scaleValue(context, attr.offsetX);
         double scaledY = scaleValue(context, attr.offsetY);
 
+        print("attr.fontColor ${attr.fontColor}");
         editorKey.currentState!.addLayer(
           TextLayer(
             /// Adjust the offset position to place the image at any desired
@@ -129,6 +130,7 @@ class _FrameExampleState extends State<FrameExample>
               fontWeight: attr.fontStyle,
               color: attr.fontColor,
             ),
+            color: attr.fontColor ?? Colors.black,
           ),
         );
       } else if(attr.imagePath.isNotEmpty) {

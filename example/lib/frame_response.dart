@@ -5,7 +5,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 
 class ApiService {
-  Future<List<AttributeModel>> fetchFrameData() async {
+  Future<(String,List<AttributeModel>)> fetchFrameData() async {
     const String apiUrl = 'http://192.168.1.24:1000/api/frame-data-list/25/1/6';
     const String bearerToken = '27|UIcpM1TLITp97kYuGyX3G8EbY4sRN0Iu85uxXtvTb026de7b';
 
@@ -21,7 +21,7 @@ class ApiService {
     if (response.statusCode == 200) {
       log("response.data ${response.data}");
       // If the server returns a 200 OK response, parse the JSON.
-      return parseAllAttributes(response.data['ResponseData'] as  Map<String,dynamic>);
+      return (response.data['ResponseData']['background_image'].toString(),parseAllAttributes(response.data['ResponseData'] as  Map<String,dynamic>));
     } else {
       // If the server did not return a 200 OK response,
       // throw an exception.
@@ -53,6 +53,10 @@ List<AttributeModel> parseAllAttributes(Map<String, dynamic> decodedJson) {
   }
 
   return allAttributes;
+}
+
+class FrameResponseModel {
+
 }
 
 class AttributeModel {

@@ -44,6 +44,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<AttributeModel>? response;
+  String frame = "";
   final ApiService _apiService = ApiService();
 
   @override
@@ -53,7 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
    _loadAndTransformData() async {
-    response = await _apiService.fetchFrameData(); 
+    var res = await _apiService.fetchFrameData();
+    frame = res.$1;
+    response = res.$2;
     setState(() {});
   }
 
@@ -66,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           ElevatedButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(frameUrl: "http://192.168.1.24:1000/admin-uploads/frame/backgroundimages/Post-Personal-Footer-design2.png",attributes: response!,)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(frameUrl: frame,attributes: response!,)));
           }, child: Text("Open"))
         ],
       ),
