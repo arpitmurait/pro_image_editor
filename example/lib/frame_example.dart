@@ -9,9 +9,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pro_image_editor/core/models/layers/layer_interaction.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
 import 'example_helper.dart';
+import 'frame_response.dart';
 import 'material_icon_button.dart';
 import 'pixel_transparent_painter.dart';
 import 'prepare_image_widget.dart';
@@ -20,9 +22,10 @@ String kImageEditorExampleAssetPath = "assets/post.jpg";
 
 /// The example for a frame around the images
 class FrameExample extends StatefulWidget {
-  final Map<String,dynamic> history;
+  final String frameUrl;
+  final List<AttributeModel> attributes;
   /// Creates a new [SelectableLayerExample] widget.
-  const FrameExample({super.key, required this.history});
+  const FrameExample({super.key, required this.frameUrl, required this.attributes});
 
   @override
   State<FrameExample> createState() => _FrameExampleState();
@@ -31,8 +34,6 @@ class FrameExample extends StatefulWidget {
 class _FrameExampleState extends State<FrameExample>
     with ExampleHelperState<FrameExample> {
   late final ScrollController _bottomBarScrollCtrl;
-
-  String _frameUrl = 'assets/frame.png';
 
   /// Better scale experience
   final double _initScale = 10;
@@ -46,27 +47,182 @@ class _FrameExampleState extends State<FrameExample>
   void initState() {
     super.initState();
     _bottomBarScrollCtrl = ScrollController();
-    preCacheImage(assetPath: _frameUrl);
     _createTransparentBackgroundImage();
-
   }
 
   loadBgImage(){
     precacheImage(AssetImage(kImageEditorExampleAssetPath), context);
+    precacheImage(NetworkImage(widget.frameUrl), context);
     editorKey.currentState!.addLayer(
       WidgetLayer(
         /// Adjust the offset position to place the image at any desired
         /// location. Note that a zero offset places the image at the center
         /// of the editor.
         offset: Offset.zero,
-        scale: _initScale * (MediaQuery.of(context).devicePixelRatio / 1.65),
-        widget: Image.asset(
-          kImageEditorExampleAssetPath,
-          fit: BoxFit.cover,
+        boxConstraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width,
+          maxHeight: MediaQuery.of(context).size.width,
+        ),
+        interaction: LayerInteraction(
+          enableSelection: false,
+          enableEdit: false,
+          enableMove: false,
+          enableScale: false,
+          enableRotate: false,
+        ),
+        scale: _initScale * (MediaQuery.of(context).devicePixelRatio),
+        widget: IgnorePointer(
+          child: Image.asset(
+            kImageEditorExampleAssetPath,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
+
+    editorKey.currentState!.addLayer(
+      WidgetLayer(
+        /// Adjust the offset position to place the image at any desired
+        /// location. Note that a zero offset places the image at the center
+        /// of the editor.
+        offset: Offset.zero,
+        boxConstraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width,
+          maxHeight: MediaQuery.of(context).size.width,
+        ),
+        interaction: LayerInteraction(
+          enableSelection: false,
+          enableEdit: false,
+          enableMove: false,
+          enableScale: false,
+          enableRotate: false,
+        ),
+        scale: _initScale * (MediaQuery.of(context).devicePixelRatio),
+        widget: IgnorePointer(
+          child: Image.network(
+            widget.frameUrl,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+
+    for(int i =0; i<widget.attributes.length; i++){
+
+      var attr = widget.attributes[i];
+      if(widget.attributes[i].isText){
+        double scaledX = scaleValue(context, attr.offsetX);
+        double scaledY = scaleValue(context, attr.offsetY);
+
+        editorKey.currentState!.addLayer(
+          TextLayer(
+            /// Adjust the offset position to place the image at any desired
+            /// location. Note that a zero offset places the image at the center
+            /// of the editor.
+            offset: Offset(scaledX + (scaleNormalValue(context, attr.width) / 2.5), scaledY - (scaleNormalValue(context, attr.height))),
+            text: attr.text ?? '',
+            scale: ((attr.textSize ?? 14) / 4) * 0.1,
+            colorMode: LayerBackgroundMode.onlyColor,
+            background: Colors.transparent,
+            textStyle: TextStyle(
+              fontSize: (attr.textSize ?? 14),
+              fontWeight: attr.fontStyle,
+              color: attr.fontColor,
+            ),
+          ),
+        );
+      } else if(attr.imagePath.isNotEmpty) {
+        double scaledX = scaleValue(context, attr.offsetX);
+        double scaledY = scaleValue(context, attr.offsetY);
+
+        editorKey.currentState!.addLayer(
+            WidgetLayer(
+              /// Adjust the offset position to place the image at any desired
+              /// location. Note that a zero offset places the image at the center
+              /// of the editor.
+              offset: Offset(scaledX + (scaleNormalValue(context, attr.width) / 2.5), scaledY + (scaleNormalValue(context, attr.height) / 2.5)),
+              boxConstraints: BoxConstraints(
+                maxHeight: scaleNormalValue(context, attr.height),
+                maxWidth: scaleNormalValue(context, attr.width),
+                minWidth: scaleNormalValue(context, attr.width),
+                minHeight: scaleNormalValue(context, attr.height),
+              ),
+              widget: Image.network(
+                attr.imagePath ?? '',
+                height: scaleNormalValue(context, attr.height),
+                width: scaleNormalValue(context, attr.height),
+              ),
+            )
+        );
+      } else {
+        double scaledX = scaleValue(context, attr.offsetX);
+        double scaledY = scaleValue(context, attr.offsetY);
+
+        editorKey.currentState!.addLayer(
+            WidgetLayer(
+              /// Adjust the offset position to place the image at any desired
+              /// location. Note that a zero offset places the image at the center
+              /// of the editor.
+              offset: Offset(scaledX - (scaleNormalValue(context, attr.width) / 2.5), scaledY - (scaleNormalValue(context, attr.height) / 2.5)),
+              boxConstraints: BoxConstraints(
+                maxHeight: scaleNormalValue(context, attr.height),
+                maxWidth: scaleNormalValue(context, attr.width),
+                minWidth: scaleNormalValue(context, attr.width),
+                minHeight: scaleNormalValue(context, attr.height),
+              ),
+              widget: Image.network(
+                attr.imagePath ?? '',
+                height: scaleNormalValue(context, attr.height),
+                width: scaleNormalValue(context, attr.height),
+                errorBuilder: (context, error, stackTrace) => Icon(Icons.error,color: attr.imageColor,),
+              ),
+            )
+        );
+      }
+      
+      // double scaledX = scaleValue(context, 246.5234);
+      // double scaledY = scaleValue(context, 981.9902);
+      //
+      // editorKey.currentState!.addLayer(
+      //   TextLayer(
+      //     /// Adjust the offset position to place the image at any desired
+      //     /// location. Note that a zero offset places the image at the center
+      //     /// of the editor.
+      //       offset: Offset(scaledX, scaledY),
+      //       text: "Arpit",
+      //       colorMode: LayerBackgroundMode.onlyColor,
+      //       background: Colors.transparent,
+      //       textStyle: TextStyle(
+      //         fontSize: 25,
+      //         fontWeight: FontWeight.bold,
+      //       )
+      //   ),
+      // );
+
+    }
+
     setState(() {});
+  }
+  Color getColorFromHexs(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "0xFF" + hexColor;
+    }
+    return Color(int.parse(hexColor, radix: 16));
+  }
+
+  double scaleValue(BuildContext context, double designValue) {
+    const double designWidth = 1024.0;
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double scaleFactor = deviceWidth / designWidth;
+    return (designValue * scaleFactor) - (deviceWidth / 2);
+  }
+
+  double scaleNormalValue(BuildContext context, double designValue) {
+    const double designWidth = 1024.0;
+    final double deviceWidth = MediaQuery.of(context).size.width;
+    final double scaleFactor = deviceWidth / designWidth;
+    return (designValue * scaleFactor);
   }
 
   @override
@@ -210,14 +366,14 @@ class _FrameExampleState extends State<FrameExample>
   }
 
   void _toggleFrame() async {
-    String newFrameUrl = _frameUrl == 'assets/frame.png'
-        ? 'assets/frame1.png'
-        : 'assets/frame.png';
-
-    /// Important to precache the frame before we add it to the editor
-    await precacheImage(AssetImage(newFrameUrl), context);
-
-    _frameUrl = newFrameUrl;
+    // String newFrameUrl = _frameUrl == 'assets/frame.png'
+    //     ? 'assets/frame1.png'
+    //     : 'assets/frame.png';
+    //
+    // /// Important to precache the frame before we add it to the editor
+    // await precacheImage(AssetImage(newFrameUrl), context);
+    //
+    // _frameUrl = newFrameUrl;
 
     /// Mark all background-generated screenshots as broken, as the user has
     /// selected a different frame. This will trigger the screenshot to
@@ -280,15 +436,7 @@ class _FrameExampleState extends State<FrameExample>
     );
   }
 
-  EditorImage get _frameImage => EditorImage(
-        assetPath: _frameUrl,
-
-        /// Optional use another option below
-        ///
-        /// networkUrl: ,
-        /// byteArray: ,
-        /// file: ,
-      );
+  EditorImage get _frameImage => EditorImage(networkUrl: widget.frameUrl,);
 
   @override
   Widget build(BuildContext context) {
@@ -325,22 +473,46 @@ class _FrameExampleState extends State<FrameExample>
       configs: ProImageEditorConfigs(
           designMode: platformDesignMode,
           imageGeneration: const ImageGenerationConfigs(
-            enableUseOriginalBytes: false,
-
-            /// Optional set the output format to png. Default format is jpeg
-            /// outputFormat: OutputFormat.png,
+            processorConfigs: ProcessorConfigs(
+              processorMode: ProcessorMode.auto,
+            ),
+            maxOutputSize: Size(1024, 1024),
+            allowEmptyEditingCompletion: true,
           ),
           layerInteraction: const LayerInteractionConfigs(
-            selectable: LayerInteractionSelectable.disabled,
+            selectable: LayerInteractionSelectable.enabled,
+            initialSelected: true,
+            icons: LayerInteractionIcons(
+              remove: Icons.clear,
+              edit: Icons.edit_outlined,
+              rotateScale: Icons.sync,
+            ),
+            style: LayerInteractionStyle(
+              buttonRadius: 10,
+              strokeWidth: 1.2,
+              borderElementWidth: 7,
+              borderElementSpace: 5,
+              borderColor: Colors.blue,
+              removeCursor: SystemMouseCursors.click,
+              rotateScaleCursor: SystemMouseCursors.click,
+              editCursor: SystemMouseCursors.click,
+              hoverCursor: SystemMouseCursors.move,
+              borderStyle: LayerInteractionBorderStyle.solid,
+              showTooltips: false,
+            ),
           ),
-          stateHistory: StateHistoryConfigs(
-            initStateHistory: ImportStateHistory.fromMap(widget.history),
+          i18n: const I18n(
+            layerInteraction: I18nLayerInteraction(
+              remove: 'Remove',
+              edit: 'Edit',
+              rotateScale: 'Rotate and Scale',
+            ),
           ),
           mainEditor: MainEditorConfigs(
             enableCloseButton: true,
             widgets: MainEditorWidgets(
               bodyItemsRecorded: (editor, rebuildStream) => [
-                _buildFrame(editor.sizesManager.bodySize, rebuildStream),
+                // _buildFrame(editor.sizesManager.bodySize, rebuildStream),
               ],
               bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
                 stream: rebuildStream,
@@ -360,7 +532,7 @@ class _FrameExampleState extends State<FrameExample>
           paintEditor: PaintEditorConfigs(
             widgets: PaintEditorWidgets(
               bodyItemsRecorded: (editor, rebuildStream) => [
-                _buildFrame(editor.editorBodySize, rebuildStream),
+                // _buildFrame(editor.editorBodySize, rebuildStream),
               ],
             ),
             style: const PaintEditorStyle(
@@ -408,7 +580,7 @@ class _FrameExampleState extends State<FrameExample>
             /// ),
           ),
           stickerEditor: StickerEditorConfigs(
-            enabled: false,
+            enabled: true,
             initWidth: _layerInitWidth / _initScale,
             builder: (setLayer, scrollController) {
               // Optionally your code to pick layers
@@ -418,19 +590,19 @@ class _FrameExampleState extends State<FrameExample>
     );
   }
 
-  ReactiveWidget _buildFrame(Size bodySize, Stream<void> rebuildStream) {
-    return ReactiveWidget(
-      builder: (_) => IgnorePointer(
-        child: Image.asset(
-          _frameUrl,
-          width: bodySize.width,
-          height: bodySize.height,
-          fit: BoxFit.contain,
-        ),
-      ),
-      stream: rebuildStream,
-    );
-  }
+  // ReactiveWidget _buildFrame(Size bodySize, Stream<void> rebuildStream) {
+  //   return ReactiveWidget(
+  //     builder: (_) => IgnorePointer(
+  //       child: Image.asset(
+  //         _frameUrl,
+  //         width: bodySize.width,
+  //         height: bodySize.height,
+  //         fit: BoxFit.contain,
+  //       ),
+  //     ),
+  //     stream: rebuildStream,
+  //   );
+  // }
 
   Widget _buildBottomBar(
     ProImageEditorState editor,

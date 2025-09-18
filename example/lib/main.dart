@@ -43,9 +43,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  FrameDataResponse? response;
+  List<AttributeModel>? response;
   final ApiService _apiService = ApiService();
-  final DataTransformer _dataTransformer = DataTransformer();
 
   @override
   void initState() {
@@ -67,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           ElevatedButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(history: _dataTransformer.transformApiDataToEditorMap(response!),),));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(frameUrl: "http://192.168.1.24:1000/admin-uploads/frame/backgroundimages/Post-Personal-Footer-design2.png",attributes: response!,)));
           }, child: Text("Open"))
         ],
       ),
