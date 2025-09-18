@@ -365,15 +365,10 @@ class _FrameExampleState extends State<FrameExample>
     }
   }
 
-  void _toggleFrame() async {
-    // String newFrameUrl = _frameUrl == 'assets/frame.png'
-    //     ? 'assets/frame1.png'
-    //     : 'assets/frame.png';
-    //
+  void changeFrame(String newFrameUrl) async {
+
     // /// Important to precache the frame before we add it to the editor
-    // await precacheImage(AssetImage(newFrameUrl), context);
-    //
-    // _frameUrl = newFrameUrl;
+    await precacheImage(AssetImage(newFrameUrl), context);
 
     /// Mark all background-generated screenshots as broken, as the user has
     /// selected a different frame. This will trigger the screenshot to
@@ -517,9 +512,24 @@ class _FrameExampleState extends State<FrameExample>
               bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
                 stream: rebuildStream,
                 key: key,
-                builder: (_) => _buildBottomBar(
-                  editor,
-                  constraints,
+                builder: (_) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if(frameUpdating) SizedBox(
+                      height: 120,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: 6,
+                        padding: EdgeInsets.all(8),
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) => Container(height: 120,width: 120,color: Colors.grey,margin: EdgeInsets.only(right: 12),),
+                      ),
+                    ),
+                    _buildBottomBar(
+                      editor,
+                      constraints,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -624,7 +634,7 @@ class _FrameExampleState extends State<FrameExample>
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minWidth: min(constraints.maxWidth, 500),
-                maxWidth: 500,
+                maxWidth: 550,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -633,13 +643,13 @@ class _FrameExampleState extends State<FrameExample>
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     FlatIconTextButton(
-                      label: Text('Toggle Frame', style: _bottomTextStyle),
+                      label: Text('Change Frame', style: _bottomTextStyle),
                       icon: const Icon(
                         Icons.filter_frames_outlined,
                         size: 22.0,
                         color: Colors.white,
                       ),
-                      onPressed: _toggleFrame,
+                      onPressed: updateFrame,
                     ),
                     const VerticalDivider(width: 3),
                     FlatIconTextButton(
@@ -687,6 +697,15 @@ class _FrameExampleState extends State<FrameExample>
                       ),
                       onPressed: editor.openStickerEditor,
                     ),
+                    FlatIconTextButton(
+                      label: Text('Crop', style: _bottomTextStyle),
+                      icon: const Icon(
+                        Icons.crop_rotate,
+                        size: 22.0,
+                        color: Colors.white,
+                      ),
+                      onPressed: editor.openCropRotateEditor,
+                    ),
                   ],
                 ),
               ),
@@ -695,5 +714,13 @@ class _FrameExampleState extends State<FrameExample>
         ),
       ),
     );
+  }
+
+  bool frameUpdating = true;
+  updateFrame(){
+    setState(() {
+      frameUpdating = !frameUpdating;
+    });
+    changeFrame(widget.frameUrl);
   }
 }
