@@ -155,7 +155,8 @@ class _FloatSelectionOverlayState extends State<FloatSelectionOverlay> {
     final paddedWidth = childWidth + padding.horizontal;
     final paddedHeight = childHeight + padding.vertical;
 
-    transform.translateByDouble(-padding.left, -padding.top, 0.0, 1.0);
+    // transform.translateByDouble(-padding.left, -padding.top, 0.0, 1.0);
+    transform.translate(-padding.left, -padding.top, 0.0);
 
     return OverlayPortal(
       controller: _overlayCtrl,

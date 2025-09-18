@@ -24,8 +24,11 @@ class PathBuilderArrow extends PathBuilderBase {
 
     // Create transform to rotate + translate the arrowhead to the end point
     final direction = (end - start).direction;
+    // final transform = Matrix4.identity()
+    //   ..translateByDouble(end.dx, end.dy, 0.0, 1.0)
+    //   ..rotateZ(direction);
     final transform = Matrix4.identity()
-      ..translateByDouble(end.dx, end.dy, 0.0, 1.0)
+      ..translate(end.dx, end.dy, 0.0) // <- Corrected line
       ..rotateZ(direction);
 
     // Apply transformation and add to main path

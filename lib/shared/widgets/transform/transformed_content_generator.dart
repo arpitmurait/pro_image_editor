@@ -118,17 +118,32 @@ class TransformedContentGenerator extends StatelessWidget {
     }
 
     /// Compose flip, rotate & fitHelper scale into one matrix:
+    // final Matrix4 outerMatrix = Matrix4.identity()
+    //   // fitHelper
+    //   ..scaleByDouble(fitFactor, fitFactor, fitFactor, 1.0)
+    //   // rotation
+    //   ..rotateZ(_transformConfigs.angle)
+    //   ..scaleByDouble(
+    //       // flip X
+    //       _transformConfigs.flipX ? -1.0 : 1.0,
+    //       // flip Y
+    //       _transformConfigs.flipY ? -1.0 : 1.0,
+    //       1.0,
+    //       1.0);
     final Matrix4 outerMatrix = Matrix4.identity()
-      // fitHelper
-      ..scaleByDouble(fitFactor, fitFactor, fitFactor, 1.0)
-      // rotation
+    // 1. Uniformly scale the object to fit
+      ..scale(fitFactor, fitFactor, 1.0) // z-axis scale is 1.0 for 2D
+
+    // 2. Rotate the object around its center
       ..rotateZ(_transformConfigs.angle)
-      ..scaleByDouble(
-          // flip X
+
+    // 3. Flip the object horizontally and/or vertically
+      ..scale(
+        // flip X
           _transformConfigs.flipX ? -1.0 : 1.0,
           // flip Y
           _transformConfigs.flipY ? -1.0 : 1.0,
-          1.0,
+          // z-axis flip is not needed
           1.0);
 
     return Transform(
@@ -165,9 +180,12 @@ class TransformedContentGenerator extends StatelessWidget {
     }
 
     // Combine translate + scale into one matrix
+    // final matrix = Matrix4.identity()
+    //   ..scaleByDouble(scale, scale, scale, 1.0)
+    //   ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
     final matrix = Matrix4.identity()
-      ..scaleByDouble(scale, scale, scale, 1.0)
-      ..translateByDouble(offset.dx, offset.dy, 0.0, 1.0);
+      ..scale(scale, scale, 1.0) // Corrected: Use scale() with 3 arguments
+      ..translate(offset.dx, offset.dy, 0.0); // Corrected: Use translate() with 3 arguments
 
     return Transform(
       alignment: Alignment.center,

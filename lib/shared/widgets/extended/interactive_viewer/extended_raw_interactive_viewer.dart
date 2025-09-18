@@ -656,9 +656,11 @@ class ExtendedRawInteractiveViewerState
       alignedTranslation = translation;
     }
 
+    // final Matrix4 nextMatrix = matrix.clone()
+    //   ..translateByDouble(
+    //       alignedTranslation.dx, alignedTranslation.dy, 0.0, 1.0);
     final Matrix4 nextMatrix = matrix.clone()
-      ..translateByDouble(
-          alignedTranslation.dx, alignedTranslation.dy, 0.0, 1.0);
+      ..translate(alignedTranslation.dx, alignedTranslation.dy, 0.0);
 
     // Transform the viewport to determine where its four corners will be after
     // the child has been transformed.
@@ -754,8 +756,10 @@ class ExtendedRawInteractiveViewerState
     final double clampedTotalScale =
         clampDouble(totalScale, widget.minScale, widget.maxScale);
     final double clampedScale = clampedTotalScale / currentScale;
+    // return matrix.clone()
+    //   ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1.0);
     return matrix.clone()
-      ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1.0);
+      ..scale(clampedScale, clampedScale, 1.0);
   }
 
   // Return a new matrix representing the given matrix after applying the given
@@ -765,10 +769,14 @@ class ExtendedRawInteractiveViewerState
       return matrix.clone();
     }
     final Offset focalPointScene = _transformer.toScene(focalPoint);
+    // return matrix.clone()
+    //   ..translateByDouble(focalPointScene.dx, focalPointScene.dy, 0.0, 1.0)
+    //   ..rotateZ(-rotation)
+    //   ..translateByDouble(-focalPointScene.dx, -focalPointScene.dy, 0.0, 1.0);
     return matrix.clone()
-      ..translateByDouble(focalPointScene.dx, focalPointScene.dy, 0.0, 1.0)
+      ..translate(focalPointScene.dx, focalPointScene.dy, 0.0)
       ..rotateZ(-rotation)
-      ..translateByDouble(-focalPointScene.dx, -focalPointScene.dy, 0.0, 1.0);
+      ..translate(-focalPointScene.dx, -focalPointScene.dy, 0.0);
   }
 
   // Returns true iff the given _GestureType is enabled.
@@ -1384,10 +1392,14 @@ Quad _transformViewport(Matrix4 matrix, Rect viewport) {
 // Find the axis aligned bounding box for the rect rotated about its center by
 // the given amount.
 Quad _getAxisAlignedBoundingBoxWithRotation(Rect rect, double rotation) {
+  // final Matrix4 rotationMatrix = Matrix4.identity()
+  //   ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0.0, 1.0)
+  //   ..rotateZ(rotation)
+  //   ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0.0, 1.0);
   final Matrix4 rotationMatrix = Matrix4.identity()
-    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0.0, 1.0)
+    ..translate(rect.size.width / 2, rect.size.height / 2, 0.0)
     ..rotateZ(rotation)
-    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0.0, 1.0);
+    ..translate(-rect.size.width / 2, -rect.size.height / 2, 0.0);
   final Quad boundariesRotated = Quad.points(
     rotationMatrix.transform3(Vector3(rect.left, rect.top, 0.0)),
     rotationMatrix.transform3(Vector3(rect.right, rect.top, 0.0)),
