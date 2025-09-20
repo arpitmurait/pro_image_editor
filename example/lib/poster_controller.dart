@@ -8,12 +8,16 @@ import 'frame_response.dart';
 class PosterController extends GetxController {
   List frames = [];
   List<AttributeModel> attributes = [];
+  List stickerSubCategories = [];
+  List stickers = [];
   String frameUrl = "";
   RxBool frameUpdating = false.obs;
+  int selectedIndex = 0;
 
   @override
   void onInit() {
     getFrames();
+    getStickerCategoryList();
     super.onInit();
   }
 
@@ -55,4 +59,48 @@ class PosterController extends GetxController {
     } else {
     }
   }
+
+  getStickerCategoryList() async {
+    String apiUrl = 'http://192.168.1.24:1000/api/sticker-subcategory/1';
+
+    final res = await dio.Dio().get(apiUrl,
+        options: dio.Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        )
+    );
+
+    if (res.statusCode == 200) {
+      stickerSubCategories = res.data['ResponseData'] as List;
+      fetchStickers(frames[0]['id'].toString());
+      update();
+    } else {
+    }
+  }
+
+  updateCategory(int index){
+    selectedIndex = index;
+    fetchStickers(stickerSubCategories[index]['id'].toString());
+    update();
+  }
+
+  fetchStickers(String id) async {
+    String apiUrl = 'http://192.168.1.24:1000/api/sticker-subcategory-image/$id';
+
+    final res = await dio.Dio().get(apiUrl,
+        options: dio.Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        )
+    );
+
+    if (res.statusCode == 200) {
+      stickers = res.data['ResponseData'] as List;
+      update();
+    } else {
+    }
+  }
+
 }

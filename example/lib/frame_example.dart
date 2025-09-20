@@ -19,6 +19,7 @@ import 'material_icon_button.dart';
 import 'pixel_transparent_painter.dart';
 import 'poster_controller.dart';
 import 'prepare_image_widget.dart';
+import 'sticker_page.dart';
 
 String kImageEditorExampleAssetPath = "assets/post.jpg";
 String icCall = "assets/icons/1_call.png";
@@ -175,9 +176,10 @@ class _FrameExampleState extends State<FrameExample>
                 minWidth: scaleNormalValue(context, attr.width),
                 minHeight: scaleNormalValue(context, attr.height),
               ),
-              widget: Image.asset(icCall,
+              widget: Image.asset(attr.type == "Contact" ? icCall : icUser,
                 height: scaleNormalValue(context, attr.height),
                 width: scaleNormalValue(context, attr.width),
+                color: attr.imageColor,
                 errorBuilder: (context, error, stackTrace) => Icon(Icons.error,color: attr.imageColor,),
               ),
             )
@@ -597,8 +599,8 @@ class _FrameExampleState extends State<FrameExample>
               appBarBackground: Colors.yellow,
               appBarColor: Colors.black,
               bottomBarBackground: Colors.yellow,
-            )
-
+              cropCornerColor: Colors.yellow,
+            ),
             /// widgets: CropRotateEditorWidgets(
             ///   bodyItems: (editor, rebuildStream) => [
             ///     _buildFrame(editor.editorBodySize, rebuildStream),
@@ -636,11 +638,39 @@ class _FrameExampleState extends State<FrameExample>
           stickerEditor: StickerEditorConfigs(
             enabled: true,
             initWidth: _layerInitWidth / _initScale,
-            builder: (setLayer, scrollController) {
-              // Optionally your code to pick layers
-              return const SizedBox();
-            },
+            builder: _buildStickers,
           )),
+    );
+  }
+
+  Widget _buildStickers(
+      void Function(WidgetLayer widget) setLayer,
+      ScrollController scrollController,
+      ) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: StickersPage(onStickerClick: (img) async {
+
+        LoadingDialog.instance.show(
+          context,
+          configs: const ProImageEditorConfigs(),
+          theme: Theme.of(context),
+        );
+        await precacheImage(
+        NetworkImage(img),
+        context,
+        );
+        LoadingDialog.instance.hide();
+        setLayer(
+          WidgetLayer(
+            widget: Image.network(img,),
+            scale: _initScale / 3,
+            exportConfigs: WidgetLayerExportConfigs(
+              id: 'sticker-$img',
+            ),
+          ),
+        );
+      },),
     );
   }
 

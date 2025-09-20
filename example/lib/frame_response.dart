@@ -17,10 +17,12 @@ List<AttributeModel> parseAllAttributes(Map<String, dynamic> decodedJson) {
     // 'item' is a Map like {"Name": [...]}. We don't care about the key "Name",
     // we just want its value, which is the list of attributes.
     // 'item.values.first' safely gets that inner list.
+    final String? type = item.keys.first as String?;
     final List<dynamic> innerList = item.values.first as List;
 
     // 5. Loop through each attribute object in the inner list.
     for (var attributeJson in innerList) {
+      attributeJson['type'] = type;
       // 6. Convert the JSON map to an AttributeModel object and add it to our final list.
       allAttributes.add(AttributeModel.fromJson(attributeJson as Map<String, dynamic>));
     }
@@ -43,6 +45,7 @@ class AttributeModel {
   final Color? fontColor;
   final FontWeight? fontStyle;
   final String? fontFamily;
+  final String? type;
 
   AttributeModel({
     required this.id,
@@ -58,6 +61,7 @@ class AttributeModel {
     this.fontColor,
     this.fontStyle,
     this.fontFamily,
+    this.type,
   });
 
   factory AttributeModel.fromJson(Map<String, dynamic> json) {
@@ -110,6 +114,7 @@ class AttributeModel {
       fontColor: getColorFromHex(json['fontColor'].toString()),
       fontStyle: getFontWeight(json['fontStyle'].toString()),
       fontFamily: json['fontFamily'].toString(),
+      type: json['type'].toString(),
     );
   }
 }
