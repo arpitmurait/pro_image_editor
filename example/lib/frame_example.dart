@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/core/models/layers/layer_interaction.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -16,6 +17,7 @@ import 'example_helper.dart';
 import 'frame_response.dart';
 import 'material_icon_button.dart';
 import 'pixel_transparent_painter.dart';
+import 'poster_controller.dart';
 import 'prepare_image_widget.dart';
 
 String kImageEditorExampleAssetPath = "assets/post.jpg";
@@ -24,10 +26,8 @@ String icUser = "assets/icons/1_user.png";
 
 /// The example for a frame around the images
 class FrameExample extends StatefulWidget {
-  final String frameUrl;
-  final List<AttributeModel> attributes;
   /// Creates a new [SelectableLayerExample] widget.
-  const FrameExample({super.key, required this.frameUrl, required this.attributes});
+  const FrameExample({super.key});
 
   @override
   State<FrameExample> createState() => _FrameExampleState();
@@ -35,13 +35,15 @@ class FrameExample extends StatefulWidget {
 
 class _FrameExampleState extends State<FrameExample>
     with ExampleHelperState<FrameExample> {
+  PosterController controller = Get.put(PosterController());
+
   late final ScrollController _bottomBarScrollCtrl;
 
   /// Better scale experience
   final double _initScale = 10;
   final double _layerInitWidth = 200;
 
-  final _bottomTextStyle = const TextStyle(fontSize: 10.0, color: Colors.white);
+  final _bottomTextStyle = const TextStyle(fontSize: 10.0, color: Colors.black);
 
   Uint8List? _transparentBytes;
 
@@ -54,7 +56,7 @@ class _FrameExampleState extends State<FrameExample>
 
   loadBgImage(){
     precacheImage(AssetImage(kImageEditorExampleAssetPath), context);
-    precacheImage(NetworkImage(widget.frameUrl), context);
+    precacheImage(NetworkImage(controller.frameUrl), context);
     editorKey.currentState!.addLayer(
       WidgetLayer(
         /// Adjust the offset position to place the image at any desired
@@ -102,17 +104,17 @@ class _FrameExampleState extends State<FrameExample>
         scale: _initScale * (MediaQuery.of(context).devicePixelRatio),
         widget: IgnorePointer(
           child: Image.network(
-            widget.frameUrl,
+            controller.frameUrl,
             fit: BoxFit.cover,
           ),
         ),
       ),
     );
 
-    for(int i =0; i<widget.attributes.length; i++){
+    for(int i =0; i<controller.attributes.length; i++){
 
-      var attr = widget.attributes[i];
-      if(widget.attributes[i].isText){
+      var attr = controller.attributes[i];
+      if(controller.attributes[i].isText){
         double scaledX = scaleValue(context, attr.offsetX);
         double scaledY = scaleValue(context, attr.offsetY);
 
@@ -121,7 +123,7 @@ class _FrameExampleState extends State<FrameExample>
             /// Adjust the offset position to place the image at any desired
             /// location. Note that a zero offset places the image at the center
             /// of the editor.
-            offset: Offset(scaledX + MediaQuery.of(context).size.width * 0.06, scaledY),
+            offset: Offset(scaledX + MediaQuery.of(context).size.width * 0.065, scaledY),
             text: attr.text ?? '',
             scale: ((attr.textSize ?? 14) / 6) * 0.1,
             colorMode: LayerBackgroundMode.onlyColor,
@@ -369,6 +371,9 @@ class _FrameExampleState extends State<FrameExample>
 
   void changeFrame(String newFrameUrl) async {
 
+    editorKey.currentState!.removeAllLayers();
+    editorKey.currentState!.clearLayerSelection();
+
     // /// Important to precache the frame before we add it to the editor
     await precacheImage(AssetImage(newFrameUrl), context);
 
@@ -433,7 +438,7 @@ class _FrameExampleState extends State<FrameExample>
     );
   }
 
-  EditorImage get _frameImage => EditorImage(networkUrl: widget.frameUrl,);
+  EditorImage get _frameImage => EditorImage(networkUrl: controller.frameUrl,);
 
   @override
   Widget build(BuildContext context) {
@@ -511,22 +516,48 @@ class _FrameExampleState extends State<FrameExample>
               bodyItemsRecorded: (editor, rebuildStream) => [
                 // _buildFrame(editor.sizesManager.bodySize, rebuildStream),
               ],
+              appBar: (editor, rebuildStream) => ReactiveAppbar(
+                builder: (context) {
+                  return AppBar(
+                    backgroundColor: Colors.yellow,
+                    leading: IconButton(onPressed: () => Get.back(), icon: Icon(Icons.arrow_back,color: Colors.black,)),
+                    actions: [
+                      IconButton(onPressed: editor.undoAction, icon: Icon(Icons.undo,color: Colors.black,)),
+                      IconButton(onPressed: editor.redoAction, icon: Icon(Icons.redo,color: Colors.black,)),
+                      IconButton(onPressed: editor.doneEditing, icon: Icon(Icons.done,color: Colors.black,)),
+                    ],
+                  );
+                },
+                stream: rebuildStream,
+              ),
               bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
                 stream: rebuildStream,
                 key: key,
                 builder: (_) => Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if(frameUpdating) SizedBox(
+                    Obx(() => (controller.frameUpdating.value) ? SizedBox(
                       height: 120,
                       child: ListView.builder(
                         shrinkWrap: true,
-                        itemCount: 6,
+                        itemCount: controller.frames.length,
                         padding: EdgeInsets.all(8),
                         scrollDirection: Axis.horizontal,
-                        itemBuilder: (context, index) => Container(height: 120,width: 120,color: Colors.grey,margin: EdgeInsets.only(right: 12),),
+                        itemBuilder: (context, index) => InkWell(
+                          onTap: () async {
+                            await controller.fetchFrameData(controller.frames[index]['id'].toString());
+                            changeFrame(controller.frames[index]['background_image'].toString());
+                          },
+                          child: Container(
+                            height: 120,
+                            width: 120,
+                            color: Colors.white,
+                            margin: EdgeInsets.only(right: 12),
+                            child: Image.network(controller.frames[index]['image'].toString(),),
+                          ),
+                        ),
                       ),
-                    ),
+                    ) : SizedBox(),),
                     _buildBottomBar(
                       editor,
                       constraints,
@@ -538,7 +569,7 @@ class _FrameExampleState extends State<FrameExample>
             style: const MainEditorStyle(
               background: Colors.transparent,
               uiOverlayStyle:
-                  SystemUiOverlayStyle(statusBarColor: Colors.black),
+                  SystemUiOverlayStyle(statusBarColor: Colors.yellow),
             ),
           ),
           paintEditor: PaintEditorConfigs(
@@ -549,14 +580,24 @@ class _FrameExampleState extends State<FrameExample>
             ),
             style: const PaintEditorStyle(
               background: Colors.transparent,
+              appBarBackground: Colors.yellow,
+              appBarColor: Colors.black,
+              bottomBarBackground: Colors.yellow,
+              bottomBarInactiveItemColor: Colors.black,
+              bottomBarActiveItemColor: Colors.grey,
               uiOverlayStyle:
-                  SystemUiOverlayStyle(statusBarColor: Colors.black),
+                  SystemUiOverlayStyle(statusBarColor: Colors.yellow),
             ),
           ),
 
           /// Crop-Rotate, Filter, Tune and Blur editors are not supported
           cropRotateEditor: const CropRotateEditorConfigs(
             enabled: false,
+            style: CropRotateEditorStyle(
+              appBarBackground: Colors.yellow,
+              appBarColor: Colors.black,
+              bottomBarBackground: Colors.yellow,
+            )
 
             /// widgets: CropRotateEditorWidgets(
             ///   bodyItems: (editor, rebuildStream) => [
@@ -591,6 +632,7 @@ class _FrameExampleState extends State<FrameExample>
             ///   ],
             /// ),
           ),
+
           stickerEditor: StickerEditorConfigs(
             enabled: true,
             initWidth: _layerInitWidth / _initScale,
@@ -627,7 +669,7 @@ class _FrameExampleState extends State<FrameExample>
       child: BottomAppBar(
         /// kBottomNavigationBarHeight is important that helper-lines will work
         height: kBottomNavigationBarHeight,
-        color: Colors.black,
+        color: Colors.yellow,
         padding: EdgeInsets.zero,
         child: Center(
           child: SingleChildScrollView(
@@ -649,9 +691,9 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.filter_frames_outlined,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
-                      onPressed: updateFrame,
+                      onPressed: () => controller.frameUpdating.value = !controller.frameUpdating.value,
                     ),
                     const VerticalDivider(width: 3),
                     FlatIconTextButton(
@@ -659,7 +701,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.image_outlined,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: _chooseCameraOrGallery,
                     ),
@@ -668,7 +710,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.edit_rounded,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: editor.openPaintEditor,
                     ),
@@ -677,7 +719,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.text_fields,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: editor.openTextEditor,
                     ),
@@ -686,7 +728,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.sentiment_satisfied_alt_rounded,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: editor.openEmojiEditor,
                     ),
@@ -695,7 +737,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.sticky_note_2,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: editor.openStickerEditor,
                     ),
@@ -704,7 +746,7 @@ class _FrameExampleState extends State<FrameExample>
                       icon: const Icon(
                         Icons.crop_rotate,
                         size: 22.0,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                       onPressed: editor.openCropRotateEditor,
                     ),
@@ -718,11 +760,4 @@ class _FrameExampleState extends State<FrameExample>
     );
   }
 
-  bool frameUpdating = true;
-  updateFrame(){
-    setState(() {
-      frameUpdating = !frameUpdating;
-    });
-    changeFrame(widget.frameUrl);
-  }
 }

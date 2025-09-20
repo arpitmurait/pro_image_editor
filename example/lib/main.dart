@@ -1,7 +1,9 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:example/frame_example.dart';
+import 'package:example/poster_controller.dart';
 import 'package:example/selectable_layer_example.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'frame_response.dart';
 
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Pro-Image-Editor',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -43,21 +45,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<AttributeModel>? response;
-  String frame = "";
-  final ApiService _apiService = ApiService();
+
+  PosterController controller = Get.put(PosterController());
 
   @override
   void initState() {
-    super.initState(); 
-    _loadAndTransformData();
-  }
-  
-   _loadAndTransformData() async {
-    var res = await _apiService.fetchFrameData();
-    frame = res.$1;
-    response = res.$2;
-    setState(() {});
+    super.initState();
   }
 
   @override
@@ -69,8 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           ElevatedButton(onPressed: () async {
-            await _loadAndTransformData();
-            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample(frameUrl: frame,attributes: response!,)));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => FrameExample()));
           }, child: Text("Open"))
         ],
       ),

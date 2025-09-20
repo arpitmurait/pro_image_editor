@@ -4,32 +4,6 @@ import 'dart:developer';
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 
-class ApiService {
-  Future<(String,List<AttributeModel>)> fetchFrameData() async {
-    const String apiUrl = 'http://192.168.1.24:1000/api/frame-data-list/62/1/6';
-    const String bearerToken = '27|UIcpM1TLITp97kYuGyX3G8EbY4sRN0Iu85uxXtvTb026de7b';
-
-    final response = await dio.Dio().get(apiUrl,
-      options: dio.Options(
-        headers: {
-          'Content-Type': 'application/json',
-          'bearerToken': bearerToken,
-        },
-      )
-    );
-
-    if (response.statusCode == 200) {
-      log("response.data ${response.data}");
-      // If the server returns a 200 OK response, parse the JSON.
-      return (response.data['ResponseData']['background_image'].toString(),parseAllAttributes(response.data['ResponseData'] as  Map<String,dynamic>));
-    } else {
-      // If the server did not return a 200 OK response,
-      // throw an exception.
-      throw Exception('Failed to load frame data: ${response.statusCode}');
-    }
-  }
-}
-
 List<AttributeModel> parseAllAttributes(Map<String, dynamic> decodedJson) {
 
   // 2. Get the top-level list associated with the "attr" key.
@@ -53,10 +27,6 @@ List<AttributeModel> parseAllAttributes(Map<String, dynamic> decodedJson) {
   }
 
   return allAttributes;
-}
-
-class FrameResponseModel {
-
 }
 
 class AttributeModel {
